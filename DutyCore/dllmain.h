@@ -17,5 +17,9 @@ extern "C" __declspec(dllexport) HRESULT D3D11CreateDevice(void* pAdapter, UINT 
 
 namespace dutycore
 {
-
+	class main
+	{
+	public:
+		static char PrintBuffer[1024];
+	};
 }

@@ -27,3 +27,8 @@ HRESULT D3D11CreateDevice(void* pAdapter, UINT DriverType, HMODULE Software, UIN
 
     return p_D3D11CreateDevice(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, ppDevice, pFeatureLevel, ppImmediateContext);
 }
+
+namespace dutycore
+{
+    char main::PrintBuffer[1024];
+}

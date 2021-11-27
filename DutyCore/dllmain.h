@@ -20,6 +20,14 @@ namespace dutycore
 	class main
 	{
 	public:
+		using tWaitForSingleObject = DWORD(*)(HANDLE, DWORD);
+		static tWaitForSingleObject p_WaitForSingleObject;
+
+		static DWORD OldProtect;
+
+		static void CreateEntryPoint();
+		static DWORD InterceptWaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds);
+
 		static char PrintBuffer[1024];
 	};
 }

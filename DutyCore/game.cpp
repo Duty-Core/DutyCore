@@ -35,4 +35,36 @@ namespace dutycore
 			return 0;
 		return game::GetXAssetSizeHandler(index);
 	}
+
+	void game::ResizeAssetLimits(int index, int newSize)
+	{
+		auto structSize = GetXAssetSize(index);
+		auto assetPool = GetXAssetPool(index);
+		// TODO: Support resizing assetPools to be less than current size
+		if (assetPool != 0 && assetPool->maximum < newSize)
+		{
+			auto newBlock = (LinkedListEntry*)calloc(newSize - assetPool->maximum, structSize);
+			if (newBlock != 0)
+			{
+				LinkedListEntry* blockPtr = (LinkedListEntry*)assetPool->firstEntry;
+				LinkedListEntry* nextBlockPtr = newBlock;
+				auto size_c = newSize - 1;
+				do
+				{
+					if (!blockPtr->next)
+					{
+						blockPtr->next = nextBlockPtr;
+						blockPtr = nextBlockPtr;
+						nextBlockPtr = (LinkedListEntry*)((uint8_t*)nextBlockPtr + structSize);
+					}
+					else
+					{
+						blockPtr = (LinkedListEntry*)((uint8_t*)blockPtr + structSize);
+					}
+					--size_c;
+				} while (size_c);
+				assetPool->maximum = newSize;
+			}
+		}
+	}
 }

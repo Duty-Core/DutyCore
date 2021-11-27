@@ -22,5 +22,6 @@ namespace dutycore
 		static HMODULE ModuleBase;
 
 		static int GetXAssetSize(int index);
+		static void ResizeAssetLimits(int index, int newSize);
 	};
 }

@@ -36,6 +36,7 @@ namespace callofduty
 	struct CommonFunctions
 	{
 		BuiltinFunctionDef
+			ReportStubUsage,
 			Record3DText,
 			RecordEntText,
 			RecordLine,

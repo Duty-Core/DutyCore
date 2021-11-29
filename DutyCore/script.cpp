@@ -4,7 +4,7 @@
 
 namespace callofduty {
 	CommonFunctions* script::GetCommonFunctions() {
-		return ((CommonFunctions*)(dutycore::game::ModuleBase + 0x33477c0));
+		return ((CommonFunctions*)(dutycore::game::ModuleBase + 0x33477a0));
 	}
 
 	char* script::Scr_GetString(scriptInstance_t inst, unsigned int index) {

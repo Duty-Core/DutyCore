@@ -19,7 +19,7 @@ namespace dutycore
 		static XAsset* GetXAssetPool(int index);
 
 	public:
-		static HMODULE ModuleBase;
+		static char* ModuleBase;
 
 		static int GetXAssetSize(int index);
 		static void ResizeAssetLimits(int index, int newSize);

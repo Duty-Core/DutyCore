@@ -3,7 +3,7 @@
 
 namespace dutycore
 {
-	HMODULE game::ModuleBase = GetModuleHandle(NULL);
+	char* game::ModuleBase = (char*)GetModuleHandle(NULL);
 	game::tGetXAssetSize game::DB_GetXAssetTypeSize;
 	XAsset* game::DB_XAssetPool;
 
@@ -11,7 +11,7 @@ namespace dutycore
 	{
 		if (!game::DB_GetXAssetTypeSize)
 		{
-			game::DB_GetXAssetTypeSize = reinterpret_cast<game::tGetXAssetSize>((uint8_t*)game::ModuleBase + 0x13E9DD0);
+			game::DB_GetXAssetTypeSize = reinterpret_cast<game::tGetXAssetSize>(game::ModuleBase + 0x13E9DD0);
 			sprintf_s(main::PrintBuffer, "DB_GetXAssetSizeHandler @ 0x%p", game::DB_GetXAssetTypeSize);
 			MinLog::Instance().WriteLine(main::PrintBuffer);
 		}
@@ -22,7 +22,7 @@ namespace dutycore
 	{
 		if (!game::DB_XAssetPool)
 		{
-			game::DB_XAssetPool = reinterpret_cast<XAsset*>((uint8_t*)game::ModuleBase + 0x94093F0);
+			game::DB_XAssetPool = reinterpret_cast<XAsset*>(game::ModuleBase + 0x94093F0);
 			sprintf_s(main::PrintBuffer, "DB_XAssetPool @ 0x%p", game::DB_XAssetPool);
 			MinLog::Instance().WriteLine(main::PrintBuffer);
 		}

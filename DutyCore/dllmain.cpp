@@ -1,9 +1,10 @@
 #include "dllmain.h"
 #include "MinLog.h"
 #include "dllproxy.h"
-#include "game.h"
 #include "resolve_imports.h"
 #include "Minhook.h"
+#include "game.h"
+#include "script.h"
 
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
@@ -53,24 +54,26 @@ namespace dutycore
             main::p_WaitForSingleObject = oWaitForSingleObject;
         }
 
-        VirtualProtect(*((void**)((uint8_t*)game::ModuleBase + 0x1AAEAD14)), sizeof(void*), PAGE_EXECUTE_READWRITE, &main::OldProtect);
+        VirtualProtect(*((void**)(game::ModuleBase + 0x1AAEAD14)), sizeof(void*), PAGE_EXECUTE_READWRITE, &main::OldProtect);
         *((void**)((uint8_t*)game::ModuleBase + 0x1AAEAD14)) = (void*)main::InterceptWaitForSingleObject;
-        VirtualProtect(*((void**)((uint8_t*)game::ModuleBase + 0x1AAEAD14)), sizeof(void*), main::OldProtect, &main::OldProtect);
+        VirtualProtect(*((void**)(game::ModuleBase + 0x1AAEAD14)), sizeof(void*), main::OldProtect, &main::OldProtect);
     }
 
     DWORD main::InterceptWaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds) {
 
         // Check if the AssetPool has been initialized
-        if (*((uint8_t*)game::ModuleBase + 0x9412942) == 1)
+        if (*(game::ModuleBase + 0x9412942) == 1)
         {
             // Unhook WaitForSingleObject
-            VirtualProtect(*((void**)((uint8_t*)game::ModuleBase + 0x1AAEAD14)), sizeof(void*), PAGE_EXECUTE_READWRITE, &main::OldProtect);
-            *((void**)((uint8_t*)game::ModuleBase + 0x1AAEAD14)) = (void*)main::p_WaitForSingleObject;
-            VirtualProtect(*((void**)((uint8_t*)game::ModuleBase + 0x1AAEAD14)), sizeof(void*), main::OldProtect, &main::OldProtect);
+            VirtualProtect(*((void**)(game::ModuleBase + 0x1AAEAD14)), sizeof(void*), PAGE_EXECUTE_READWRITE, &main::OldProtect);
+            *((void**)(game::ModuleBase + 0x1AAEAD14)) = (void*)main::p_WaitForSingleObject;
+            VirtualProtect(*((void**)(game::ModuleBase + 0x1AAEAD14)), sizeof(void*), main::OldProtect, &main::OldProtect);
 
             // All Code that should be executed after hooking should be done here.
             // This entry point may be too delayed for certain features
             // Must evaluate on a case-by-case basis
+            auto cfuncs = callofduty::script::GetCommonFunctions();
+            cfuncs->AddDebugCommand.actionFunc = callofduty::script::GScr_AddDebugCommand;
         }
 
         return main::p_WaitForSingleObject(hHandle, dwMilliseconds);

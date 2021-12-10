@@ -20,14 +20,24 @@ namespace dutycore
 	class main
 	{
 	public:
-		using tWaitForSingleObject = DWORD(*)(HANDLE, DWORD);
-		static tWaitForSingleObject p_WaitForSingleObject;
-
-		static DWORD OldProtect;
-
 		static void CreateEntryPoint();
 		static DWORD InterceptWaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds);
-
-		static char PrintBuffer[1024];
 	};
+
+	constexpr unsigned int SL_GenerateCanonicalString(const char* name)
+	{
+		int i = 0;
+		unsigned int hash = 0x4B9ACE2F;
+		while (name[i] != 0)
+		{
+			hash ^= name[i];
+			hash *= 0x1000193;
+			i++;
+		}
+
+		hash ^= name[i];
+		hash *= 0x1000193;
+
+		return hash;
+	}
 }

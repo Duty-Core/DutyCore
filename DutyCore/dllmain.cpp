@@ -34,14 +34,15 @@ HRESULT D3D11CreateDevice(void* pAdapter, UINT DriverType, HMODULE Software, UIN
     return p_D3D11CreateDevice(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, ppDevice, pFeatureLevel, ppImmediateContext);
 }
 
+using tWaitForSingleObject = DWORD(*)(HANDLE, DWORD);
+
+static DWORD OldProtect = 0;
+
+static tWaitForSingleObject oWaitForSingleObject = 0;
+static tWaitForSingleObject p_WaitForSingleObject = 0;
+
 namespace dutycore
 {
-    char main::PrintBuffer[1024];
-    DWORD main::OldProtect;
-
-    main::tWaitForSingleObject oWaitForSingleObject;
-    main::tWaitForSingleObject main::p_WaitForSingleObject;
-
     void main::CreateEntryPoint()
     {
         // Locate Kernel32.dll
@@ -50,13 +51,12 @@ namespace dutycore
         kernel32.resolve("WaitForSingleObject", &oWaitForSingleObject);
 
         // Copy the original pointer to a local variable
-        if (!main::p_WaitForSingleObject) {
-            main::p_WaitForSingleObject = oWaitForSingleObject;
+        if (!p_WaitForSingleObject) {
+            p_WaitForSingleObject = oWaitForSingleObject;
         }
 
-        VirtualProtect(*((void**)(game::ModuleBase + 0x1AAEAD14)), sizeof(void*), PAGE_EXECUTE_READWRITE, &main::OldProtect);
         *((void**)((uint8_t*)game::ModuleBase + 0x1AAEAD14)) = (void*)main::InterceptWaitForSingleObject;
-        VirtualProtect(*((void**)(game::ModuleBase + 0x1AAEAD14)), sizeof(void*), main::OldProtect, &main::OldProtect);
+        *((void**)(game::ModuleBase + 0x1AAEAD14)) = (void*)main::InterceptWaitForSingleObject;
     }
 
     DWORD main::InterceptWaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds) {
@@ -65,9 +65,7 @@ namespace dutycore
         if (*(game::ModuleBase + 0x9412942) == 1)
         {
             // Unhook WaitForSingleObject
-            VirtualProtect(*((void**)(game::ModuleBase + 0x1AAEAD14)), sizeof(void*), PAGE_EXECUTE_READWRITE, &main::OldProtect);
-            *((void**)(game::ModuleBase + 0x1AAEAD14)) = (void*)main::p_WaitForSingleObject;
-            VirtualProtect(*((void**)(game::ModuleBase + 0x1AAEAD14)), sizeof(void*), main::OldProtect, &main::OldProtect);
+            *((void**)(game::ModuleBase + 0x1AAEAD14)) = (void*)p_WaitForSingleObject;
 
             // All Code that should be executed after hooking should be done here.
             // This entry point may be too delayed for certain features
@@ -76,6 +74,5 @@ namespace dutycore
             cfuncs->AddDebugCommand.actionFunc = callofduty::script::GScr_AddDebugCommand;
         }
 
-        return main::p_WaitForSingleObject(hHandle, dwMilliseconds);
     }
 }

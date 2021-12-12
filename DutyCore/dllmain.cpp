@@ -1,10 +1,10 @@
 #include "dllmain.h"
-#include "MinLog.h"
+#include "MinHook.h"
 #include "dllproxy.h"
 #include "resolve_imports.h"
-#include "Minhook.h"
 #include "game.h"
 #include "script.h"
+#include "renderer.h"
 
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
@@ -24,27 +24,38 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     return TRUE;
 }
 
-HRESULT D3D11CreateDevice(void* pAdapter, UINT DriverType, HMODULE Software, UINT Flags, const void* pFeatureLevels, UINT FeatureLevels, UINT SDKVersion, void** ppDevice, void* pFeatureLevel, void** ppImmediateContext)
+extern "C" HRESULT __declspec(dllexport) WICConvertBitmapSource(void* dstFormat, void* pISrc, void** ppIDst)
 {
-    MinLog::Instance().WriteLine("Called D3D11CreateDevice");
-    if (!p_D3D11CreateDevice) {
-        p_D3D11CreateDevice = (tD3D11CreateDevice)DLLProxy::Instance().XLoadExport("D3D11CreateDevice", "d3d11.dll");
+    dutycore::main::Log.WriteLine("Called WICConvertBitmapSource");
+    if (!p_WICConvertBitmapSource) {
+        p_WICConvertBitmapSource = (tWICConvertBitmapSource)DLLProxy::Instance().XLoadExport("WICConvertBitmapSource", "WindowsCodecs.dll");
+        dutycore::main::Log.WriteLine("Found WICConvertBitmapSource");
     }
 
-    return p_D3D11CreateDevice(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, ppDevice, pFeatureLevel, ppImmediateContext);
+    return p_WICConvertBitmapSource(dstFormat, pISrc, ppIDst);
 }
 
 using tWaitForSingleObject = DWORD(*)(HANDLE, DWORD);
 
-static DWORD OldProtect = 0;
+static DWORD OldProtect = {};
 
-static tWaitForSingleObject oWaitForSingleObject = 0;
-static tWaitForSingleObject p_WaitForSingleObject = 0;
+static tWaitForSingleObject oWaitForSingleObject = {};
+static tWaitForSingleObject p_WaitForSingleObject = {};
+static bool InitOnce = false;
 
 namespace dutycore
 {
+    MinLog main::Log = MinLog("DutyCore.log", "dutycore");
+
     void main::CreateEntryPoint()
     {
+        if (MH_Initialize() != MH_OK)
+        {
+            main::Log.WriteLine("Duty Core Failed Loading");
+            return;
+        }
+        main::Log.WriteLine("Duty Core Loaded");
+
         // Locate Kernel32.dll
         auto const kernel32 = Resolver::find(L"KERNEL32.dll");
         // Find vtable pointer for WaitForSingleObject
@@ -55,24 +66,31 @@ namespace dutycore
             p_WaitForSingleObject = oWaitForSingleObject;
         }
 
-        *((void**)((uint8_t*)game::ModuleBase + 0x1AAEAD14)) = (void*)main::InterceptWaitForSingleObject;
         *((void**)(game::ModuleBase + 0x1AAEAD14)) = (void*)main::InterceptWaitForSingleObject;
     }
 
     DWORD main::InterceptWaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds) {
 
         // Check if the AssetPool has been initialized
-        if (*(game::ModuleBase + 0x9412942) == 1)
+        if (*(game::ModuleBase + 0x9412942) == 1 && !InitOnce)
         {
+            InitOnce = true;
+
+            main::Log.WriteLine("Duty Core Init");
+            main::Log << std::hex << (uint64_t)game::ModuleBase << "\n";
             // Unhook WaitForSingleObject
             *((void**)(game::ModuleBase + 0x1AAEAD14)) = (void*)p_WaitForSingleObject;
 
             // All Code that should be executed after hooking should be done here.
             // This entry point may be too delayed for certain features
             // Must evaluate on a case-by-case basis
+
             auto cfuncs = callofduty::script::GetCommonFunctions();
             cfuncs->AddDebugCommand.actionFunc = callofduty::script::GScr_AddDebugCommand;
+
+            renderer::SetupDXDevice();
         }
 
+        return p_WaitForSingleObject(hHandle, dwMilliseconds);
     }
 }

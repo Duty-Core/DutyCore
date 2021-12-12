@@ -5,21 +5,20 @@
 #endif
 
 #include <windows.h>
+#include "MinLog.h"
 
-#define MINLOG_OUT_FILE "DutyCore.log"
-#define MINLOG_OUT_DIR "dutycore"
-
-using tD3D11CreateDevice = HRESULT(*)(void*, UINT, HMODULE, UINT, const void*, UINT, UINT, void**, void*, void**);
-static tD3D11CreateDevice p_D3D11CreateDevice;
+using tWICConvertBitmapSource = HRESULT(*)(void*, void*, void**);
+static tWICConvertBitmapSource p_WICConvertBitmapSource;
 
 extern "C" BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved);
-extern "C" __declspec(dllexport) HRESULT D3D11CreateDevice(void* pAdapter, UINT DriverType, HMODULE Software, UINT Flags, const void* pFeatureLevels, UINT FeatureLevels, UINT SDKVersion, void** ppDevice, void* pFeatureLevel, void** ppImmediateContext);
+extern "C" __declspec(dllexport) HRESULT WICConvertBitmapSource(void* dstFormat, void* pISrc, void** ppIDst);
 
 namespace dutycore
 {
 	class main
 	{
 	public:
+		static MinLog Log;
 		static void CreateEntryPoint();
 		static DWORD InterceptWaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds);
 	};

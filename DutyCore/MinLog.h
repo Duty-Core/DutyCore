@@ -2,14 +2,7 @@
 #include <fstream>
 #include <filesystem>
 #include <iostream>
-
-#ifndef MINLOG_OUT_FILE
-#define MINLOG_OUT_FILE "MinLog.log"
-#endif
-
-#ifndef MINLOG_OUT_DIR
-#define MINLOG_OUT_DIR  "logs"
-#endif
+#include <string>
 
 class MinLog
 {
@@ -18,14 +11,6 @@ private:
     bool _isOpen = false;
 
 public:
-    static MinLog& Instance()
-    {
-        static MinLog _instance = MinLog(MINLOG_OUT_FILE, MINLOG_OUT_DIR);
-        return _instance;
-    }
-
-    MinLog() { }
-
     MinLog(const char* filename, const char* dir = "")
     {
         Open(filename, dir);
@@ -46,9 +31,32 @@ public:
         std::cout << value;
     }
 
+    void Write(std::string value)
+    {
+        MinLog::OutputStream << value;
+        std::cout << value;
+    }
+
     void WriteLine(const char *value)
     {
         MinLog::OutputStream << value << std::endl;
         std::cout << value << std::endl;
+    }
+
+    void WriteLine(std::string value)
+    {
+        MinLog::OutputStream << value << std::endl;
+        std::cout << value << std::endl;
+    }
+
+    MinLog& operator<<(auto const& value) {
+        MinLog::OutputStream << value;
+        std::cout << value;
+        return *this;
+    }
+
+    void Flush() {
+        MinLog::OutputStream.flush();
+        std::cout.flush();
     }
 };

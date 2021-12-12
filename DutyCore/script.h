@@ -3,7 +3,6 @@
 
 namespace callofduty
 {
-	typedef unsigned int ScrVarCanonicalName_t;
 
 	enum class LocalClientNum_t : int
 	{
@@ -24,12 +23,13 @@ namespace callofduty
 		SCRIPT_INSTANCE_MAX = 0x2,
 	};
 
+	typedef unsigned int ScrVarCanonicalName_t;
 	struct BuiltinFunctionDef
 	{
 		ScrVarCanonicalName_t canonId;
 		unsigned int min_args;
 		unsigned int max_args;
-		void(*actionFunc)(scriptInstance_t inst);
+		void(*actionFunc)(scriptInstance_t);
 		int type;
 	};
 

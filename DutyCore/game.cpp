@@ -4,16 +4,15 @@
 namespace dutycore
 {
 	char* game::ModuleBase = (char*)GetModuleHandle(NULL);
-	game::tGetXAssetSize game::DB_GetXAssetTypeSize;
-	XAsset* game::DB_XAssetPool;
+	game::tGetXAssetSize game::DB_GetXAssetTypeSize = {};
+	XAsset* game::DB_XAssetPool = {};
 
 	int game::GetXAssetSizeHandler(int index)
 	{
 		if (!game::DB_GetXAssetTypeSize)
 		{
 			game::DB_GetXAssetTypeSize = reinterpret_cast<game::tGetXAssetSize>(game::ModuleBase + 0x13E9DD0);
-			sprintf_s(main::PrintBuffer, "DB_GetXAssetSizeHandler @ 0x%p", game::DB_GetXAssetTypeSize);
-			MinLog::Instance().WriteLine(main::PrintBuffer);
+			main::Log << "DB_GetXAssetSizeHandler @ " << (void*)game::DB_GetXAssetTypeSize << "\n";
 		}
 		return game::DB_GetXAssetTypeSize(index);
 	}
@@ -23,8 +22,7 @@ namespace dutycore
 		if (!game::DB_XAssetPool)
 		{
 			game::DB_XAssetPool = reinterpret_cast<XAsset*>(game::ModuleBase + 0x94093F0);
-			sprintf_s(main::PrintBuffer, "DB_XAssetPool @ 0x%p", game::DB_XAssetPool);
-			MinLog::Instance().WriteLine(main::PrintBuffer);
+			main::Log << "DB_XAssetPool @ " << (void*)game::DB_XAssetPool << "\n";
 		}
 		return &game::DB_XAssetPool[index];
 	}

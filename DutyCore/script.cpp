@@ -18,8 +18,7 @@ namespace callofduty {
 	void script::GScr_AddDebugCommand(scriptInstance_t inst)
 	{
 		auto str = Scr_GetString(inst, 0);
-		sprintf_s(dutycore::main::PrintBuffer, "Add Debug Command: %s", str);
-		MinLog::Instance().WriteLine(dutycore::main::PrintBuffer);
+		dutycore::main::Log << "Add Debug Command: " << str << "\n";
 		Cbuf_AddText(LocalClientNum_t::LOCAL_CLIENT_0, str);
 	}
 }
